@@ -49,8 +49,9 @@ Future<void> initialize() async {
       if (!Jwt.instance.validateUser(jwt)) {
         return _Response.ok({'error': 'invalid JWT'});
       }
-      final body = await context.bodyAsJsonMap();
-      final success = updateTopics(body['topics'] ?? [], jwt);
+      final body = (await context.bodyAsJsonList());
+      final topics = body?.map((e) => e.toString()).toList();
+      final success = updateTopics(topics ?? [], jwt);
       return _Response.ok({'success': success});
     });
 
@@ -68,8 +69,9 @@ bool updateTopics(List<String> topics, String jwt) {
         return MqttTopics.test;
     }
     return null;
-  }).where((element) => element != null) as List<MqttTopics>;
-  final jsonArrayTopics = convert.jsonEncode(mTopics.map((e) => e.name));
+  }).where((element) => element != null);
+  final topicsList = mTopics.map((e) => e?.name).toList();
+  final jsonArrayTopics = convert.jsonEncode(topicsList);
   final success = Database.instance.updateTopics(jsonArrayTopics, jwt);
   return success;
 }

@@ -1,4 +1,5 @@
 import 'dart:developer';
+
 import 'package:rabbit_mq/constants.dart';
 import 'package:rabbit_mq/jwt.dart';
 import 'package:rabbit_mq/models/person.dart';
@@ -30,6 +31,14 @@ class Database {
     String topics,
     String jwt,
   ) {
+    final query = 'UPDATE person '
+        'SET topics = \'$topics\' '
+        'WHERE jwt = \'$jwt\'';
+    _query(query);
+    final result = _query('SELECT topics FROM person WHERE jwt = \'$jwt\'');
+    if (result != null && result.rows.isNotEmpty) {
+      return result.rows[0][0] == topics;
+    }
     return false;
   }
 
