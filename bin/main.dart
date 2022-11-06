@@ -1,5 +1,7 @@
-import 'package:rabbit_mq/main.dart';
+import 'package:rabbit_mq/mqtt.dart' as mqtt;
+import 'package:rabbit_mq/restful.dart' as restful;
 
 void main(List<String> arguments) {
-  run('adriankohls');
+  mqtt.run('adriankohls');
+  restful.initialize();
 }

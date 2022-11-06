@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:mqtt_client/mqtt_client.dart';
@@ -45,7 +46,7 @@ Future<void> run(String identifier) async {
 
   /// Set a ping received callback if needed, called whenever a ping response(pong) is received
   /// from the broker.
-  client.pongCallback = pong;
+  /// client.pongCallback = pong;
 
   /// Create a connection message to use or use the default one. The default one sets the
   /// client identifier, any supplied username/password and clean session,
@@ -132,7 +133,6 @@ void subscribe(String topic) {
   /// Our known topic to publish to
   final pubTopic = topic;
   final builder = MqttClientPayloadBuilder();
-  builder.addString('Hello from mqtt_client');
 
   /// Subscribe to it
 
@@ -144,7 +144,9 @@ void subscribe(String topic) {
 }
 
 /// The subscribed callback
-void onSubscribed(String topic) {}
+void onSubscribed(String topic) {
+  log('Subscribed to $topic');
+}
 
 /// The unsolicited disconnect callback
 void onDisconnected() {
