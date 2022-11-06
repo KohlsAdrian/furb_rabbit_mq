@@ -14,10 +14,10 @@ class PersonModel {
   });
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'name': name,
-        'email': email,
-        'type': type,
+        if (id != null) 'id': id,
+        if (name != null) 'name': name,
+        if (email != null) 'email': email,
+        if (type != null) 'type': type,
         'topics': topics,
       };
 }

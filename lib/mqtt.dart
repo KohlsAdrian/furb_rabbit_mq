@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
@@ -104,7 +105,27 @@ Future<void> run(String identifier) async {
   /// If needed you can listen for published messages that have completed the publishing
   /// handshake which is Qos dependant. Any message received on this stream has completed its
   /// publishing handshake with the broker.
-  client.published!.listen((MqttPublishMessage message) {});
+  client.published?.listen((MqttPublishMessage message) {
+    final topic = message.variableHeader?.topicName;
+    final data = utf8.decode(message.payload.message);
+    if (data.isNotEmpty) {
+      try {
+        final jsonObject = jsonDecode(data);
+        if (MqttTopics.values.map((e) => e.name).contains(topic)) {
+          switch (topic) {
+            case 'event':
+              break;
+            case 'test':
+              break;
+            case 'rest':
+              break;
+          }
+        }
+      } catch (e) {
+        print(e.toString());
+      }
+    }
+  });
 }
 
 Future<void> sleep() async {
