@@ -129,4 +129,14 @@ class Database {
     }
     return null;
   }
+
+  void insertMessage(Map<String, dynamic> jsonObject, String type) {
+    final message = jsonObject['message'];
+    final dateStart = jsonObject['date_start'];
+    final dateEnd = jsonObject['date_end'];
+    final query = 'INSERT INTO message '
+        '(message, date_start, date_end, type) '
+        'VALUES (\'$message\', \'$dateStart\',\'$dateEnd\', \'$type\')';
+    _query(query);
+  }
 }

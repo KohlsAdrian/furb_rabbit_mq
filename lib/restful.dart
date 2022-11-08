@@ -53,7 +53,10 @@ Future<void> initialize() async {
       final topics = body?.map((e) => e.toString()).toList();
       final success = updateTopics(topics ?? [], jwt);
       return _Response.ok({'success': success});
-    });
+    })
+    ..get('/events', (context) => null)
+    ..get('/rests', (context) => null)
+    ..get('/tests', (context) => null);
 
   await server.serve(logRequests: true);
 }

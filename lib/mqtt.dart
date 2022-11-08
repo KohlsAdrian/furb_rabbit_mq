@@ -6,6 +6,8 @@ import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
 import 'package:rabbit_mq/constants.dart';
 
+import 'database.dart';
+
 final client = MqttServerClient(host, '');
 int pongCount = 0;
 
@@ -88,7 +90,7 @@ Future<void> run(String identifier) async {
 
   /// The client has a change notifier object(see the Observable class) which we then listen to to get
   /// notifications of published updates to each subscribed topic.
-  client.updates!.listen((List<MqttReceivedMessage<MqttMessage?>>? c) {
+  client.updates?.listen((List<MqttReceivedMessage<MqttMessage?>>? c) {
     final recMess = c![0].payload as MqttPublishMessage;
     final pt =
         MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
@@ -112,14 +114,7 @@ Future<void> run(String identifier) async {
       try {
         final jsonObject = jsonDecode(data);
         if (MqttTopics.values.map((e) => e.name).contains(topic)) {
-          switch (topic) {
-            case 'event':
-              break;
-            case 'test':
-              break;
-            case 'rest':
-              break;
-          }
+          Database.instance.insertMessage(jsonObject, topic!);
         }
       } catch (e) {
         print(e.toString());
@@ -170,12 +165,7 @@ void onSubscribed(String topic) {
 }
 
 /// The unsolicited disconnect callback
-void onDisconnected() {
-  if (client.connectionStatus!.disconnectionOrigin ==
-      MqttDisconnectionOrigin.solicited) {}
-  if (pongCount == 3) {
-  } else {}
-}
+void onDisconnected() {}
 
 /// The successful connect callback
 void onConnected() {}
