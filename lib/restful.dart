@@ -55,7 +55,7 @@ Future<void> initialize() async {
       return _Response.ok({'success': success});
     });
 
-  await server.serve();
+  await server.serve(logRequests: true);
 }
 
 bool updateTopics(List<String> topics, String jwt) {
