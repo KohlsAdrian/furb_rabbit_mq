@@ -130,6 +130,25 @@ class Database {
     return null;
   }
 
+  List<dynamic> getMessages(String topic) {
+    final query = 'SELECT '
+        'id, created_at, message, date_start, date_end '
+        'FROM message WHERE type = \'$topic\'';
+    final result = _query(query);
+    if (result != null) {
+      return result.rows
+          .map((e) => {
+                'id': e[0],
+                'created_at': e[1],
+                'message': e[2],
+                'date_start': e[3],
+                'date_end': e[4],
+              })
+          .toList();
+    }
+    return [];
+  }
+
   void insertMessage(Map<String, dynamic> jsonObject, String type) {
     final message = jsonObject['message'];
     final dateStart = jsonObject['date_start'];
