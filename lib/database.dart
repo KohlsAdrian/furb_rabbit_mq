@@ -130,11 +130,21 @@ class Database {
     return null;
   }
 
-  List<dynamic> getMessages(String? topic) {
+  List<dynamic> getMessages(String? topics) {
     String query = 'SELECT '
         'id, created_at, message, date_start, date_end '
         'FROM message';
-    if (topic != null) query = '$query WHERE type = \'$topic\'';
+    if (topics != null && topics.isNotEmpty) {
+      final ttopics = topics.split(',');
+      for (int i = 0; i < ttopics.length; i++) {
+        final topic = ttopics[i];
+        if (i == 0) {
+          query = '$query WHERE type = \'$topic\'';
+        } else {
+          query = '$query OR type = \'$topic\'';
+        }
+      }
+    }
     final result = _query(query);
     if (result != null) {
       return result.rows

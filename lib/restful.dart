@@ -39,13 +39,17 @@ Future<void> initialize() async {
     })
     ..get('/topics', (context) {
       final jwt = context.headers.value('authorization') ?? '';
-      if (!isAuthenticated(jwt)) return _Response.ok({'error': 'invalid JWT'});
+      if (!Jwt.instance.validateUser(jwt)) {
+        return _Response.ok({'error': 'invalid JWT'});
+      }
       final topics = MqttTopics.values.map((e) => e.name).toList();
       return _Response.ok(topics);
     })
     ..patch('/topics', (context) async {
       final jwt = context.headers.value('authorization') ?? '';
-      if (!isAuthenticated(jwt)) return _Response.ok({'error': 'invalid JWT'});
+      if (!Jwt.instance.validateUser(jwt)) {
+        return _Response.ok({'error': 'invalid JWT'});
+      }
       final body = (await context.bodyAsJsonList());
       final topics = body?.map((e) => e.toString()).toList();
       final success = updateTopics(topics ?? [], jwt);
@@ -53,7 +57,9 @@ Future<void> initialize() async {
     })
     ..get('/messages', (context) {
       final jwt = context.headers.value('authorization') ?? '';
-      if (!isAuthenticated(jwt)) return _Response.ok({'error': 'invalid JWT'});
+      if (!Jwt.instance.validateUser(jwt)) {
+        return _Response.ok({'error': 'invalid JWT'});
+      }
       final topic = context.query.get('topic');
       final events = getMessages(topic);
       return _Response.ok(events);
@@ -61,8 +67,6 @@ Future<void> initialize() async {
 
   await server.serve(logRequests: true);
 }
-
-bool isAuthenticated(String jwt) => Jwt.instance.validateUser(jwt);
 
 List<dynamic> getMessages(String? topic) {
   final messages = Database.instance.getMessages(topic);
