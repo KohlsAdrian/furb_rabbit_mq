@@ -8,7 +8,11 @@ import 'package:rabbit_mq/database.dart';
 import 'package:rabbit_mq/jwt.dart';
 
 Future<void> initialize() async {
-  final server = Jaguar();
+  final server = Jaguar(
+    address: 'localhost',
+    port: 8080,
+    multiThread: true,
+  );
 
   server
     /* test purposes only
