@@ -130,10 +130,11 @@ class Database {
     return null;
   }
 
-  List<dynamic> getMessages(String topic) {
-    final query = 'SELECT '
+  List<dynamic> getMessages(String? topic) {
+    String query = 'SELECT '
         'id, created_at, message, date_start, date_end '
-        'FROM message WHERE type = \'$topic\'';
+        'FROM message';
+    if (topic != null) query = '$query WHERE type = \'$topic\'';
     final result = _query(query);
     if (result != null) {
       return result.rows

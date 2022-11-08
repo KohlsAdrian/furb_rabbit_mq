@@ -65,7 +65,7 @@ Future<void> initialize() async {
 bool isAuthenticated(String jwt) => Jwt.instance.validateUser(jwt);
 
 List<dynamic> getMessages(String? topic) {
-  final messages = Database.instance.getMessages(topic ?? 'event');
+  final messages = Database.instance.getMessages(topic);
   return messages;
 }
 
