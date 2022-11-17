@@ -76,16 +76,15 @@ Future<void> initialize() async {
       if (!Jwt.instance.validateUser(jwt)) {
         return _Response.ok({'error': 'invalid JWT'});
       }
-      final topic = context.query.get('topic');
-      final events = getMessages(topic);
-      return _Response.ok(events);
+      final messages = getMessages(jwt);
+      return _Response.ok(messages);
     });
 
   await server.serve(logRequests: true);
 }
 
-List<dynamic> getMessages(String? topic) {
-  final messages = Database.instance.getMessages(topic);
+List<dynamic> getMessages(String? jwt) {
+  final messages = Database.instance.getMessages(jwt);
   return messages;
 }
 

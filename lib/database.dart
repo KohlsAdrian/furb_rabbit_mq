@@ -144,23 +144,31 @@ class Database {
     return null;
   }
 
-  List<dynamic> getMessages(String? topics) {
+  List<dynamic> getMessages(String? jwt) {
+    ResultSet? result = _query(
+      'SELECT topics FROM person '
+      'WHERE jwt = \'$jwt\'',
+    );
+    List<MqttTopics> topics = [];
+    if (result != null && result.rows.isNotEmpty) {
+      final row = result.rows.first;
+      final content = row[0];
+      final listOfTopics = convert.json.decode(content.toString()) as List;
+      topics = listOfTopics.map((e) => e.toString().toTopicEnum!).toList();
+    }
+    if (topics.isEmpty) return [];
     String query = 'SELECT '
-        'id, created_at, message, date_start, date_end '
-        'FROM message';
-    if (topics != null && topics.isNotEmpty) {
-      final ttopics = topics.split(',');
-      for (int i = 0; i < ttopics.length; i++) {
-        final topic = ttopics[i];
-        if (i == 0) {
-          query = '$query WHERE type = \'$topic\'';
-        } else {
-          query = '$query OR type = \'$topic\'';
-        }
+        'id, created_at, message, date_start, date_end, type '
+        'FROM message WHERE type LIKE \'%${topics.first.name}%\' ';
+    if (topics.length > 1) {
+      for (int i = 1; i < topics.length; i++) {
+        final topic = topics[i];
+        query += 'OR type LIKE \'%${topic.name}%\'';
       }
     }
-    final result = _query(query);
-    if (result != null) {
+
+    result = _query(query);
+    if (result != null && result.rows.isNotEmpty) {
       return result.rows
           .map((e) => {
                 'id': e[0],
@@ -168,6 +176,7 @@ class Database {
                 'message': e[2],
                 'date_start': e[3],
                 'date_end': e[4],
+                'type': e[5],
               })
           .toList();
     }
