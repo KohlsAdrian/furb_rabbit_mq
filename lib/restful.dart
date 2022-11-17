@@ -25,14 +25,22 @@ Future<void> initialize() async {
       final person = await getPerson(id);
       return _Response.ok(person);
     }) */
+    ..get('/persons/me', (context) {
+      final jwt = context.headers.value('authorization') ?? '';
+      if (!Jwt.instance.validateUser(jwt)) {
+        return _Response.ok({'error': 'invalid JWT'});
+      }
+      final person = getPersonByJwt(jwt);
+      return _Response.ok(person);
+    })
     ..post('/persons', (context) async {
       final body = await context.bodyAsJsonMap();
-      final name = body['name'];
+      final name = body['name'] ?? '';
       final email = body['email'];
       final password = body['password'];
-      final type = body['type'];
+      final type = body['type'] ?? '';
       final ok = createPerson(name, email, password, type);
-      return _Response.ok({'success': ok});
+      return _Response.ok(ok);
     })
     ..post('/login', (context) async {
       final body = await context.bodyAsJsonMap();
@@ -42,11 +50,15 @@ Future<void> initialize() async {
       return _Response.ok({'jwt': jwt});
     })
     ..get('/topics', (context) {
+      final topics = MqttTopics.values.map((e) => e.name).toList();
+      return _Response.ok(topics);
+    })
+    ..get('/topics/me', (context) {
       final jwt = context.headers.value('authorization') ?? '';
       if (!Jwt.instance.validateUser(jwt)) {
         return _Response.ok({'error': 'invalid JWT'});
       }
-      final topics = MqttTopics.values.map((e) => e.name).toList();
+      final topics = getPersonTopics(jwt);
       return _Response.ok(topics);
     })
     ..patch('/topics', (context) async {
@@ -93,6 +105,16 @@ bool updateTopics(List<String> topics, String jwt) {
   final jsonArrayTopics = convert.jsonEncode(topicsList);
   final success = Database.instance.updateTopics(jsonArrayTopics, jwt);
   return success;
+}
+
+List<String> getPersonTopics(String jwt) {
+  final topics = Database.instance.getPersonTopics(jwt);
+  return topics.map((e) => e.name).toList();
+}
+
+Map<String, dynamic> getPersonByJwt(String jwt) {
+  final person = Database.instance.getPersonJwt(jwt);
+  return person?.toMap() ?? {};
 }
 
 List<Map<String, dynamic>> getPersons() {

@@ -137,7 +137,7 @@ Future<void> disconnect() async {
   client.disconnect();
 }
 
-void usubscribe(String topic) {
+void unsubscribe(String topic) {
   /// Finally, unsubscribe and exit gracefully
 
   client.unsubscribe(topic);

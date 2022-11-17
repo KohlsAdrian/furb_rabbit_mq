@@ -1,3 +1,4 @@
+import 'dart:convert' as convert;
 import 'dart:developer';
 
 import 'package:rabbit_mq/constants.dart';
@@ -26,6 +27,7 @@ class Database {
   List<PersonModel> getPersons() => _getPerson();
   PersonModel? getPerson(String? id) => _getPerson(id);
   PersonModel? getPersonJwt(String token) => _getPersonJwt(token);
+  List<MqttTopics> getPersonTopics(String token) => _getPersonTopics(token);
 
   bool updateTopics(
     String topics,
@@ -40,6 +42,18 @@ class Database {
       return result.rows[0][0] == topics;
     }
     return false;
+  }
+
+  List<MqttTopics> _getPersonTopics(String token) {
+    final query = 'SELECT topics FROM person WHERE jwt == \'$token\'';
+    final result = _query(query);
+    if (result != null && result.isNotEmpty) {
+      final row = result.rows.first;
+      final content = row[0];
+      final topics = convert.json.decode(content.toString()) as List;
+      return topics.map((e) => e.toString().toTopicEnum!).toList();
+    }
+    return [];
   }
 
   String? login(String email, String password) {
@@ -74,7 +88,7 @@ class Database {
         'VALUES (\'$name\', \'$email\', \'$password\', \'$personTypeName\')';
     _query(query);
     final result = _query('SELECT id FROM person WHERE email LIKE \'$email\'');
-    return result != null && result.isNotEmpty;
+    return result != null && result.rows.isNotEmpty;
   }
 
   dynamic _getPerson([String? id]) {
