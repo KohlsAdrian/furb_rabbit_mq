@@ -8,7 +8,7 @@
             "name": "rabbit_mq",
             "request": "launch",
             "type": "dart",
-            "program": "bin/main.dart"
+            "program": "bin/main.dart",
         }
     ]
 }

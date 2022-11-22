@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert' as convert;
 
+import 'package:http/http.dart' as http;
 import 'package:jaguar/jaguar.dart';
 import 'package:jaguar/serve/server.dart';
 import 'package:rabbit_mq/constants.dart';
@@ -78,6 +79,25 @@ Future<void> initialize() async {
       }
       final messages = getMessages(jwt);
       return _Response.ok(messages);
+    })
+    ..post('/message', (context) async {
+      final jwt = context.headers.value('authorization') ?? '';
+      if (!Jwt.instance.validateUser(jwt)) {
+        return _Response.ok({'error': 'invalid JWT'});
+      }
+      final body = await context.bodyAsJsonMap();
+
+      final message = body['message'] ?? '';
+      final type = body['type'] ?? '';
+      final dateStart = body['date_start'] ?? '';
+      final dateEnd = body['date_end'] ?? '';
+      final success = await createMessage(
+        message: message,
+        type: type,
+        dateStart: dateStart,
+        dateEnd: dateEnd,
+      );
+      return _Response.ok({'success': success});
     });
 
   await server.serve(logRequests: true);
@@ -86,6 +106,46 @@ Future<void> initialize() async {
 List<dynamic> getMessages(String? jwt) {
   final messages = Database.instance.getMessages(jwt);
   return messages;
+}
+
+Future<bool> createMessage({
+  required String message,
+  required String type,
+  required String dateStart,
+  required String dateEnd,
+}) async {
+  MqttTopics? topic;
+  switch (type) {
+    case 'event':
+      topic = MqttTopics.event;
+      break;
+    case 'rest':
+      topic = MqttTopics.rest;
+      break;
+    case 'test':
+      topic = MqttTopics.test;
+      break;
+  }
+  if (topic == null) return false;
+
+  final response = await http.post(
+    Uri.parse('http://localhost:15672/api/exchanges/%2F/publish'),
+    headers: {'Authorization': '$username:$password'},
+    body: {
+      'routing_key': topic.name,
+      'properties': {},
+      'payload_encoding': 'string',
+      'payload': convert.jsonEncode(
+        {
+          'message': message,
+          'dateStart': dateStart.toDateTime.toIso8601String(),
+          'dateEnd': dateEnd.toDateTime.toIso8601String(),
+          'type': topic.name,
+        },
+      ),
+    },
+  );
+  return response.statusCode >= 200 && response.statusCode <= 400;
 }
 
 bool updateTopics(List<String> topics, String jwt) {

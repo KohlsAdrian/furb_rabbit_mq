@@ -1,6 +1,8 @@
-const host = 'jackal.rmq.cloudamqp.com';
-const username = 'lnixlvfr:lnixlvfr';
-const password = 'eRX8pkRaL99ai9FmgIlKLcjP_hjyb_Vw';
+import 'package:intl/intl.dart' as intl;
+
+const host = 'localhost';
+const username = 'adriankohls';
+const password = 'kohls123';
 
 enum MqttTopics { event, test, rest }
 
@@ -43,5 +45,11 @@ extension StringExtension on String {
       default:
     }
     return topic;
+  }
+
+  DateTime get toDateTime => _toDateTime(this);
+  DateTime _toDateTime(String value) {
+    final parsed = value.replaceAll('T', ' ');
+    return intl.DateFormat('yyyy-MM-dd HH:mm:ss').parse(parsed);
   }
 }
