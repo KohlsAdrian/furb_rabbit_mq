@@ -128,23 +128,27 @@ Future<bool> createMessage({
   }
   if (topic == null) return false;
 
+  final payload = {
+    'message': message,
+    'date_start': dateStart.toDateTime.toIso8601String(),
+    'date_end': dateEnd.toDateTime.toIso8601String(),
+    'type': topic.name,
+  };
+  final jsonMap = {
+    'routing_key': 'event',
+    'properties': {},
+    'payload_encoding': 'string',
+    'payload': convert.jsonEncode(payload),
+  };
+
+  final url = 'http://$username:$password'
+      '@localhost:15672/api'
+      '/exchanges/%2F/amq.topic/publish';
   final response = await http.post(
-    Uri.parse('http://localhost:15672/api/exchanges/%2F/publish'),
-    headers: {'Authorization': '$username:$password'},
-    body: {
-      'routing_key': topic.name,
-      'properties': {},
-      'payload_encoding': 'string',
-      'payload': convert.jsonEncode(
-        {
-          'message': message,
-          'dateStart': dateStart.toDateTime.toIso8601String(),
-          'dateEnd': dateEnd.toDateTime.toIso8601String(),
-          'type': topic.name,
-        },
-      ),
-    },
+    Uri.parse(url),
+    body: convert.json.encode(jsonMap),
   );
+  print(jsonMap);
   return response.statusCode >= 200 && response.statusCode <= 400;
 }
 
